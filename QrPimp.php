@@ -3,6 +3,10 @@
 /**
  * Static toolkit to make those pesky QR-codes a little less hurtfult to the eyes.
  * However, one should mind readability of the resulting semi-artistic blots. 
+ * 
+ * @author Artiom Basenko
+ * @version 0.1
+ * @copyright GPL
  */
 class QrPimp {
 
@@ -11,45 +15,131 @@ class QrPimp {
   /**
    * Make QR-code look good. Simple.
    * Quick and dirty, no configuration required.
+   * Each new resulting QR-code will vary in appearance.
+   *
    * @param Imagick qr Plain and boring QR-code.
+   * @param bool readable Try to make the result valid (semi)readable.
    * @return Imagick Your shiny QR-code.
    */
-  public static boost(Imagick qr) {
+  public static function magic(Imagick $qr, $readable = false) {
   }
   
   /**
    * Prettify ImageMagick QR-code.
-   * Various options are available.
+   * Various options are available:
+   * + smooth: true | false | amount
+   * + colorize: true | false | color
+   * + sharpen: true | false | amount
+   * + logo: false | path
+   * + ...
+   *
+   * In case only 'true' specified - will asume that you don't care.
+   *
    * @param Imagick qr Nasty looking generic QR-code.
+   * @param array todo List of options. If null - will perform the lowest minimum of magic.
    * @return Imagick Your QR-code, neatly prettified.
    */
-  public static style(Imagick qr, array todo) {
+  public static function style(Imagick $qr, array $todo = null) {
   }
 
-  # Private stuff, please don't look! #
+  /**
+   * Multiple at once!
+   *
+   * @param string path Path to file|folder with (an awful lot of) QR-codes.
+   * @param string pretties Path to save the handsome ones (if nothing, will owerwrite the originals).
+   */
+  public static function batch(string path, string pretties = null) {
+  }
+
+  # Private stuff, please look no further! #
+
+  /**
+   * Say hello to our ugly QR-code.
+   */
+  private static function qrImage = null;
+
+  /**
+   * Some measurements, just to sate curiosity.
+   */
+  private static function timeTook = null;
+
+  /**
+   * Work magic on those bland images.
+   * @return Imagick Pretty image of something (actually, it's QR-code).
+   */
+  private static function process(array $options) {
+    init();
+    foreach($options as $opt => $value)
+      switch($opt) {
+        case 'smooth': break;
+        default: break;
+      }
+  }
   
   /**
    * Check, if Imagick is even in system.
-   * Curse the hapless user if not (throw exception).
-   * @throws Exception
+   * Curse the hapless user if not.
+   * @throws Exception In case there's no Imagick installed.
    */
-  private static init() {
-    class_exists('Imagick') or throw new Exception('Oh noes! Do install Imagick, we implore you.');
+  private static function init() {
+    class_exists('Imagick') or 
+      throw new Exception('Oh noes! Do install Imagick, we implore you.');
   }
 
-  private static smooth() {
+  /**
+   * Apply gaussian blur filter in multiple passes.
+   */
+  private static function smooth() {
   }
 
-  private static rgb() {
+  /**
+   * Sharpen the muddy image.
+   */
+   private static function sharpen() {
+   }
+
+  /**
+   * Add some colors!
+   */
+  private static function colorize() {
   }
 
-  private static colorize() {
+  /**
+   * Gradient is the way to go.
+   */
+  private static function gradient() {
   }
 
-  private static filter() {
+  /**
+   * Include some fancy (probably not) logo picture.
+   */
+  private static function logo() {
   }
 
-  private static crc() {
+  /**
+   * Use background template.
+   */
+  private static function template() {
+  }
+
+  /**
+   * Some neat filter (no, really).
+   */
+  private static function filter() {
+  }
+
+  # Even I forgot those were here! #
+  
+  /**
+   * Generate random RGB color as Imagick compatible string.
+   */
+  private static function rgb() {
+  }
+
+  /**
+   * Check, if resulting QR-code is a readable one.
+   */
+  private static function crc() {
   }
 }
 
