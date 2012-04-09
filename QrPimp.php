@@ -48,7 +48,7 @@ class QrPimp {
    * @param string path Path to file|folder with (an awful lot of) QR-codes.
    * @param string pretties Path to save the handsome ones (if nothing, will owerwrite the originals).
    */
-  public static function batch(string path, string pretties = null) {
+  public static function batch(string $path, string $pretties = null) {
   }
 
   # Private stuff, please look no further! #
@@ -56,12 +56,12 @@ class QrPimp {
   /**
    * Say hello to our ugly QR-code.
    */
-  private static function qrImage = null;
+  private static $qrImage = null;
 
   /**
    * Some measurements, just to sate curiosity.
    */
-  private static function timeTook = null;
+  private static $timeTook = null;
 
   /**
    * Work magic on those bland images.
@@ -79,11 +79,9 @@ class QrPimp {
   /**
    * Check, if Imagick is even in system.
    * Curse the hapless user if not.
-   * @throws Exception In case there's no Imagick installed.
    */
   private static function init() {
-    class_exists('Imagick') or 
-      throw new Exception('Oh noes! Do install Imagick, we implore you.');
+    class_exists('Imagick') or die('Oh noes! Do install Imagick, we implore you.');
   }
 
   /**
@@ -141,6 +139,18 @@ class QrPimp {
    */
   private static function crc() {
   }
+
+  # And now for the tests! #
+
+  /**
+   * Perform some check-ups|hick-ups.
+   */
+  public static function test() {
+    echo 'OK, ready to rumble!<br />';
+    self::init();
+  }
 }
+
+QrPimp::test();
 
 ?>
