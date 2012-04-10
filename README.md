@@ -4,8 +4,9 @@ _Means to prettify those hideously boring QR-codes._
 
 Example:
 
-![boring](/qr.png "Boring!")
-![not boring](/pretty_qr.png "Not boring")
+![Boring QR](/images/qr.png "Boring!")
+![Not boring](/images/pretty_qr.png "Not boring")
+![Test](/images/test.jpeg)
 
 Requirements:
 
