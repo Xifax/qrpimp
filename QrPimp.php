@@ -3,31 +3,30 @@
 /**
  * Static toolkit to make those pesky QR-codes a little less hurtfult to the eyes.
  * However, one should mind readability of the resulting semi-artistic blots. 
- * Note, that low contrast and shading degrade QR-recognition beyond belied.
+ * Note, that low contrast and shading degrade QR-recognition rate beyond belief.
  * 
  * @author Artiom Basenko
- * @version 0.5
+ * @version 0.7
  * @copyright GPL
  *
  * TODO: fix tabulation
- * TODO: batch-processing
  * TODO: advanced customization
  * TODO: template and logo
+ * TODO: play with hexdec
  */
 class QrPimp {
 
   # Use one of those, good sir! #
 
   /**
-   * Make QR-code look good. Simple.
+   * Make QR-code look good. As simple as it gets.
    * Quick and clean, no configuration required.
    * Each new resulting QR-code will vary in appearance.
    *
    * @param Imagick $qr Plain and boring QR-code.
-   * @param bool $readable Try to make the result valid (semi)readable.
    * @return Imagick Your shiny QR-code.
    */
-  public static function magic(Imagick $qr, $readable = false) {
+  public static function magic(Imagick $qr) {
 	  return self::process($qr, array('smooth',
 									  'sharpen',
 									  'filter',
@@ -53,15 +52,16 @@ class QrPimp {
    *
    * @param Imagick $qr Nasty looking generic QR-code.
    * @param array $todo List of options. If null - will perform the highest possible level of magic.
+   * @param bool $readable Try to make the result valid (semi)readable.
    * @return Imagick Your QR-code, neatly prettified.
    */
-  public static function style(Imagick $qr, array $todo = null) {
+  public static function style(Imagick $qr, array $todo = null, $readable = true) {
   	  if(is_null($todo))
   	  	$todo = array('smooth',
   					  'sharpen',
 					  'filter',
 					  'colorize',
-					  'gradient',
+					  //'gradient',
 				     );
 	  return self::process($qr, $todo);
   }
@@ -72,16 +72,45 @@ class QrPimp {
    * @param string $path Path to file|folder with (an awful lot of) QR-codes.
    * @param string $pretties Path to save the handsome ones (if nothing, will owerwrite the originals).
    */
-  public static function batch(string $path, string $pretties = null) {
+  public static function batch($path, $pretties = null) {
+  	  if(file_exists($path)) {
+		try {
+			// Process all images in directory
+			if(is_dir($path)) {
+				$files = glob($path . '/*.{jpg,png,gif}', GLOB_BRACE);
+				foreach($files as $file) {
+					$pimped = self::magic(new Imagick($file));
+					if(is_null($pretties))
+						$pimped->writeImage();
+					else {
+						if(!file_exists($pretties))
+							mkdir($pretties);
+						$pimped->writeImage($pretties . '/' . basename($file));
+					}
+					$pimped->clear();
+					$pimped->destroy();
+				}
+			// Just this one file
+			} else {
+				$pimped = self::magic(new Imagick($path));
+				if(is_null($pretties))
+					$pimped->writeImage();
+				else
+					$pimped->writeImage($pretties);
+				$pimped->clear();
+				$pimped->destroy();
+			}
+		} catch(ImagickException $e) {
+			throw new Exception('Could not process some of the files: ' . $e);
+		}
+	  } else throw new Exception('Specified path "' . $path . '" does not exist, sorry.');
   }
 
   /**
    * Accumulated statistics.
    * @return array Transformation times for all QR-codes processed.
    */
-  public static function stats() {
-  	  return $time;
-  }
+  public static function stats() { return self::$times; }
 
   # Private stuff, please look no further! #
 
@@ -98,19 +127,20 @@ class QrPimp {
   /**
    * Magic values and numbers.
    */
-  private static $conf = array( // Smoothings
-  	  							'median' => 4,
-								'gauss' => 1,
-								'pass' => 2,
-								'sharp_r' => 10,
-								'sharp_s' => 3,
-								// Filters
-								'shade_a' => 45,
-								'shade_z' => 45,
-								// Colors range
-								'colors_l' => 50,
-								'colors_h' => 255,
-								// Gradients
+  private static $conf = array( // Smoothings (gauss blur + median)
+  	  							'median' => 4, 		// smooth x1
+								'gauss' => 1, 		// smooth x2
+								'pass' => 2, 		// gauss only
+								'sharp_r' => 10, 	// radius
+								'sharp_s' => 3, 	// sigma
+								// Filters (shading, pseudo-3d)
+								'shade_a' => 45, 	// azimuth
+								'shade_z' => 45, 	// elevation
+								// Colors range (mind the brightness, the contrast!)
+								'colors_l' => 30, 	// lower
+								'colors_h' => 190, 	// high
+								// Gradients (radial, vertical)
+								'radial' => 'radial-gradient',
 							  );
 
 	/**
@@ -162,13 +192,13 @@ class QrPimp {
    * Curse the hapless user if not.
    */
   private static function init() {
-    class_exists('Imagick') or die('Oh noes! Do install Imagick, we implore you.');
+    class_exists('Imagick') or die('Oh noes! Do install Imagick, we implore you (honest).');
   }
 
   /**
    * Apply gaussian blur | median filters in multiple passes.
    */
-  private static function smooth() {
+  private static function smooth($param) {
   	// Suave edges
 	self::$qr->medianFilterImage(self::$conf['median']);
 	// Multipass smooth
@@ -181,7 +211,7 @@ class QrPimp {
   /**
    * Sharpen the muddy image.
    */
-   private static function sharpen() {
+   private static function sharpen($param) {
 	// Crispness
 	self::$qr->sharpenImage(self::$conf['sharp_r'], 
 							self::$conf['sharp_s']);
@@ -204,7 +234,7 @@ class QrPimp {
   /**
    * Gradient is the way to go.
    */
-  private static function gradient() {
+  private static function gradient($param) {
 	$gradient = new Imagick();
 	$gradient->newPseudoImage(self::$qr->width, self::$qr->height,
 								'radial-gradient:white-transparent');
@@ -214,19 +244,19 @@ class QrPimp {
   /**
    * TODO: Include some fancy (probably not) logo picture.
    */
-  private static function logo() {
+  private static function logo($param) {
   }
 
   /**
    * TODO: Use background template.
    */
-  private static function template() {
+  private static function template($param) {
   }
 
   /**
    * Some neat filters (no, really).
    */
-  private static function filter() {
+  private static function filter($param) {
 	self::$qr->shadeImage(false, self::$conf['shade_a'], 
 								 self::$conf['shade_z']);
   }
@@ -254,31 +284,62 @@ class QrPimp {
 
   /**
    * Perform some check-ups|hick-ups.
-   * @param string $type Test to perform: single | batch.
+   * Beware, some especially ugly code right ahead.
+   * @param string $type Test to perform: single | batch | palette .
    */
   public static function test($type = 'single') {
 	ini_set('display_errors', 'On');
-    echo 'OK, ready to rumble!<br />';
+    set_time_limit(200);
+	echo '<hr />';
+    //echo 'OK, ready to rumble!<br />';
     self::init();
     try {
-		$qrToPimp = new Imagick('img/qr.png');
-		$qrToStyle = new Imagick('img/qr.png');
-		echo 'Processing QR...<br />';
-		uPro::go();
-		$pimpedQR = self::magic($qrToPimp);
-		$pimpedTime = uPro::fin();
-		uPro::go();
-		$stylishQR = self::style($qrToStyle);
-		$stylishTime = uPro::fin();
-		echo 'This is random magic (took ' . 
-					$pimpedTime . ' s):<br />';
-		echo "<img src='data:png;base64," . 
-					base64_encode($pimpedQR) . "' alt='qr' />";
-		echo '<hr />';
-		echo 'This is default styling (took ' . 
-					$stylishTime . ' s):<br />';
-		echo "<img src='data:png;base64," . 
-					base64_encode($stylishQR) . "' alt='qr' />";
+		switch($type) {
+			// Single (lonely) QR - if it even works and looks good.
+			case 'single':
+				$qrToPimp = new Imagick('img/qr.png');
+				$qrToStyle = new Imagick('img/qr.png');
+				echo 'Processing QR...<br />';
+				uPro::go();
+				$pimpedQR = self::magic($qrToPimp);
+				$pimpedTime = uPro::fin();
+				uPro::go();
+				$stylishQR = self::style($qrToStyle);
+				$stylishTime = uPro::fin();
+				echo 'This is random magic (took ' . 
+							$pimpedTime . ' s):<br />';
+				echo "<img src='data:png;base64," . 
+							base64_encode($pimpedQR) . "' alt='qr' />";
+				echo '<hr />';
+				echo 'This is default styling with random colors (took ' . 
+							$stylishTime . ' s):<br />';
+				echo "<img src='data:png;base64," . 
+							base64_encode($stylishQR) . "' alt='qr' />";
+				break;
+			// Multilple passes to grasp the idea of average perfomance.
+			case 'batch':
+				$iterations = 25;
+				while(--$iterations > 0)
+					self::magic(new Imagick('img/qr.png'));
+				echo 'Transformation times: <br />' . implode('<br />', self::stats()) . '<br />';
+				echo 'Total: ' . array_sum(self::stats()) . '<br />';
+				echo 'Average: ' . array_sum(self::stats()) / count(self::stats());
+				break;
+			// Plenty of colorful QR-codes to test readability (and aesthetics).
+			case 'palette':
+				$rows = $columns = 5;
+				echo '<table>';
+				for($row=0; $row < $rows; $row++) {
+					echo '<tr>';
+					for($column=0; $column < $columns; $column++)
+						echo "<td><img src='data:png;base64," . 
+									base64_encode(self::style(new Imagick('img/qr.png'))) . "' alt='qr' /></td>";
+					echo "</tr>";
+				}
+				echo '</table>';
+				break;
+			default: break;
+		}
 	} catch(ImagickException $e) {
 		echo 'Alas, something happened: ', $e;
 	}
@@ -290,9 +351,7 @@ class QrPimp {
  * Measure execution time in a simply fashion.
  */
 class uPro {
-	private static $startTime = 0;
-	private static $endTime = 0;
-	private static $totalTime = 0;
+	private static $startTime, $endTime, $totalTime = 0;
 
 	/**
 	 * Start measuring execution time.
@@ -308,5 +367,6 @@ class uPro {
 
 // Uncomment for testing.
 //QrPimp::test();
+//QrPimp::batch('batch', 'prettified');
 
 ?>
