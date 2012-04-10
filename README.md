@@ -4,9 +4,8 @@ _Means to prettify those hideously boring QR-codes._
 
 Example:
 
-![Boring QR](/images/qr.png "Boring!")
-![Not boring](/images/pretty_qr.png "Not boring")
-![Test](/images/test.jpeg)
+![Boring QR](http://github.com/Xifax/qrpimp/raw/master/qr.png "Boring!")
+![Not boring](http://github.com/Xifax/qrpimp/raw/master/pretty_qr.png "Not boring")
 
 Requirements:
 
