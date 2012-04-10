@@ -242,8 +242,8 @@ class QrPimp {
     echo 'OK, ready to rumble!<br />';
     self::init();
     try {
-		$qrToPimp = new Imagick('qr.png');
-		$qrToStyle = new Imagick('qr.png');
+		$qrToPimp = new Imagick('img/qr.png');
+		$qrToStyle = new Imagick('img/qr.png');
 		echo 'Processing QR...<br />';
 		uPro::go();
 		$pimpedQR = self::magic($qrToPimp);

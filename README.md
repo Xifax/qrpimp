@@ -6,6 +6,7 @@ Example:
 
 ![Boring QR](http://github.com/Xifax/qrpimp/raw/master/qr.png "Boring!")
 ![Not boring](http://github.com/Xifax/qrpimp/raw/master/pretty_qr.png "Not boring")
+![Another one](xifax.github.com/qrpimp/img/pretty_qr_black.png "Not boring")
 
 Requirements:
 
