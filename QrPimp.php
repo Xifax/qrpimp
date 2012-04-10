@@ -8,6 +8,11 @@
  * @author Artiom Basenko
  * @version 0.5
  * @copyright GPL
+ *
+ * TODO: fix tabulation
+ * TODO: batch-processing
+ * TODO: advanced customization
+ * TODO: template and logo
  */
 class QrPimp {
 
@@ -18,8 +23,8 @@ class QrPimp {
    * Quick and clean, no configuration required.
    * Each new resulting QR-code will vary in appearance.
    *
-   * @param Imagick qr Plain and boring QR-code.
-   * @param bool readable Try to make the result valid (semi)readable.
+   * @param Imagick $qr Plain and boring QR-code.
+   * @param bool $readable Try to make the result valid (semi)readable.
    * @return Imagick Your shiny QR-code.
    */
   public static function magic(Imagick $qr, $readable = false) {
@@ -46,8 +51,8 @@ class QrPimp {
    * In case only option name is specified - will asume that you don't care.
    * If you don't want to use something - simply skip it.
    *
-   * @param Imagick qr Nasty looking generic QR-code.
-   * @param array todo List of options. If null - will perform the highest possible level of magic.
+   * @param Imagick $qr Nasty looking generic QR-code.
+   * @param array $todo List of options. If null - will perform the highest possible level of magic.
    * @return Imagick Your QR-code, neatly prettified.
    */
   public static function style(Imagick $qr, array $todo = null) {
@@ -64,10 +69,18 @@ class QrPimp {
   /**
    * Multiple at once!
    *
-   * @param string path Path to file|folder with (an awful lot of) QR-codes.
-   * @param string pretties Path to save the handsome ones (if nothing, will owerwrite the originals).
+   * @param string $path Path to file|folder with (an awful lot of) QR-codes.
+   * @param string $pretties Path to save the handsome ones (if nothing, will owerwrite the originals).
    */
   public static function batch(string $path, string $pretties = null) {
+  }
+
+  /**
+   * Accumulated statistics.
+   * @return array Transformation times for all QR-codes processed.
+   */
+  public static function stats() {
+  	  return $time;
   }
 
   # Private stuff, please look no further! #
@@ -80,7 +93,7 @@ class QrPimp {
   /**
    * Some measurements, just to sate curiosity.
    */
-  private static $time = null;
+  private static $times = array();
 
   /**
    * Magic values and numbers.
@@ -97,7 +110,7 @@ class QrPimp {
 								// Colors range
 								'colors_l' => 50,
 								'colors_h' => 255,
-								// Gradient
+								// Gradients
 							  );
 
 	/**
@@ -110,17 +123,21 @@ class QrPimp {
 									'#470C1F',
 									'#232D58',
 									'#000000',
+									// TODO: more!
 								);
 
   /**
    * Work magic on those bland images.
+   * @param Imagick $qr QR-code image.
+   * @param array $options What to do.
    * @return Imagick Pretty image of something (actually, it's QR-code).
    */
   private static function process(Imagick $qr, array $options) {
   	self::$qr = $qr;
 	self::init();
+	uPro::go();
     foreach($options as $opt => $param) {
-	  // In case of mixed config.
+	  // In the case of mixed config.
 	  if(is_numeric($opt)) {
 	  	$opt = $param;
 	  	$param = true;
@@ -135,6 +152,7 @@ class QrPimp {
         default: break;
       }
 	}
+	self::$times[] = uPro::fin();
 
 	return self::$qr;
   }
@@ -236,8 +254,9 @@ class QrPimp {
 
   /**
    * Perform some check-ups|hick-ups.
+   * @param string $type Test to perform: single | batch.
    */
-  public static function test() {
+  public static function test($type = 'single') {
 	ini_set('display_errors', 'On');
     echo 'OK, ready to rumble!<br />';
     self::init();
