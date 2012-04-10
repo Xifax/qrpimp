@@ -287,6 +287,7 @@ class uPro {
 	public static function fin() { return microtime(true) - self::$startTime; }
 }
 
-QrPimp::test();
+// Uncomment for testing.
+//QrPimp::test();
 
 ?>

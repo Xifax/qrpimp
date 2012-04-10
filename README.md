@@ -5,7 +5,7 @@ _Means to prettify those hideously boring QR-codes._
 Example:
 
 ![Boring QR](http://github.com/Xifax/qrpimp/raw/master/img/qr.png "Boring!")
-![Not boring](http://github.com/Xifax/qrpimp/raw/master/img/pretty_qr.png "Not boring")
+![Not boring](http://github.com/Xifax/qrpimp/raw/master/img/pretty_qr_black.png "Not boring")
 
 Requirements:
 
@@ -21,12 +21,17 @@ Usage:
 ```php
 <?php
 require_once 'QrPimp.php';
-$qr = new Imagick('qr.png');
-$pimpedQR = QrPimp::magic($qrToPimp);
+// Load boring QR-code
+$pimpedQR = QrPimp::magic(new Imagick('img/qr.png'));
+// Display shiny one
 header('Content-Type: image/' . $pimpedQR->getImageFormat());
 echo $pimpedQR;
 ?>
 ```
+
+Customization:
+
+To be explained. For now, consult comments for method `QrPimp::style()`
 
 Notes:
 
